@@ -91,7 +91,6 @@ app.post("/participants", async (req, res) => {
 
 //route get participants
 app.get("/participants", async(req, res) => {
-
     try {
         const users = await db.collection("participants").find({}).toArray();
 
