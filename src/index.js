@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 import {MongoClient} from 'mongodb';
 import Joi from 'joi';
 
+//general configs
 const app = express();
 app.use(cors());
 dotenv.config();
@@ -53,6 +54,20 @@ app.post("/participants", async (req, res) => {
     } catch (err) {
         res.sendStatus(422);
         console.log(err);
+        return;
+    };
+});
+
+//route get participants
+app.get("/participants", async(req, res) => {
+
+    try {
+        const users = await db.collection("participants").find({}).toArray();
+        res.status(200).send(users);
+        return;
+
+    } catch(err) {
+        res.sendStatus(500);
         return;
     };
 });
