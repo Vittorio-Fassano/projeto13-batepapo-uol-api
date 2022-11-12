@@ -1,3 +1,4 @@
+//imports
 import express from 'express';
 import cors from 'cors';
 import chalk from 'chalk';
@@ -44,13 +45,20 @@ app.post("/participants", async (req, res) => {
 
     try {
         const validatingUser = participantSchema.validate({name}, {abortEarly: false});
+        const userAlreadyExist = await db.collection("participants").findOne({name});
 
-        await db.collection("participants").insertOne({name, lastStatus: Date.now()});
+        if (validatingUser.error || userAlreadyExist !== null ) {
+            res.status(409).send("Invalid user");
+            console.log(validatingUser.error.details.map((detail) => detail.message));
+            return;
 
-        res.sendStatus(201);
-        console.log("Validated user");
-        return;
-
+        } else {
+            await db.collection("participants").insertOne({name, lastStatus: Date.now()});
+            res.sendStatus(201);
+            console.log("Validated user");
+            return;
+        };
+        
     } catch (err) {
         res.sendStatus(422);
         console.log(err);
