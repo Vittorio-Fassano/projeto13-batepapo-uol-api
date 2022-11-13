@@ -121,11 +121,11 @@ app.get("/participants", async(req, res) => {
 //rout post messages
 app.post("/messages", async (req, res) => {
     const {to, text, type} = req.body; //req from body
-    const from = req.headers.user //req from headers
+    const {user} = req.headers //req from headers
 
     try{
         const validatingMessage = messageSchema.validate({to, text, type}, {abortEarly: false});
-        const userAlreadyExist = await db.collection("participants").findOne({name: from});
+        const userAlreadyExist = await db.collection("participants").findOne({name: user});
         
 
         if(validatingMessage.error || userAlreadyExist === null ) {
@@ -150,9 +150,24 @@ app.post("/messages", async (req, res) => {
     };
 });
 
+//route get messages
+app.get("/messages", async(req, res) => {
+    try {
+        const messages = await db.collection("messages").find({}).toArray();
+
+        res.status(200).send(messages);
+        return;
+
+    } catch(err) {
+        res.sendStatus(500); //error accessing messages
+        return;
+    };
+});
+
 //turn on the server
 app.listen(port, () => {
     console.log(chalk.bold.green(`Server running in port: ${port}`));
 });
 
-/*remaining requirements: get messages, post status,inactive users, message limit*/
+//remaining requirements: post status,inactive users, message limit;
+//fix requirements: post messages, get messages;
