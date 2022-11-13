@@ -121,11 +121,11 @@ app.get("/participants", async(req, res) => {
 //rout post messages:
 app.post("/messages", async (req, res) => {
     const {to, text, type} = req.body; //req from body
-    const from = req.headers.user //req from headers
+    const {user} = req.headers //req from headers
 
     try{
         const validatingMessage = messageSchema.validate({to, text, type}, {abortEarly: false});
-        const userAlreadyExist = await db.collection("participants").findOne({name: from});
+        const userAlreadyExist = await db.collection("participants").findOne({name: user});
         
 
         if(validatingMessage.error || userAlreadyExist === null ) {
@@ -152,11 +152,22 @@ app.post("/messages", async (req, res) => {
 
 //route get messages:
 app.get("/messages", async(req, res) => {
-    try {
-        const messages = await db.collection("messages").find({}).toArray();
+    const {user} = req.body;
+    const {limit} = req.query; //only if the limit is required
 
-        res.status(200).send(messages);
-        return;
+    try {
+        const messages = await db.collection("messages").find({
+            $or:[{from: user}, {to:user}, {to:"todos"}, {type:"message"}] //find only messages that user could see
+        }).toArray();
+
+        if(limit === null) { //without a limit
+            res.status(200).send(messages);
+            return;
+        } else {
+            const numberOfMessages = messages.slice(-limit); //with a limit from query string
+            res.status(200).send(messages);
+            return;
+        };
 
     } catch(err) {
         res.sendStatus(500); //error accessing messages
@@ -189,4 +200,4 @@ app.listen(port, () => {
 });
 
 //remaining requirements: inactive users(15s);
-//fix requirements: post messages("from" for headers), get messages(limit), post status(partially working);
+//fix requirements: post messages("from" for headers), post status(partially working);
