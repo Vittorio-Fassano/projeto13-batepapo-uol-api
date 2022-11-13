@@ -42,8 +42,8 @@ const participantSchema = Joi.object ({
 
 const messageSchema = Joi.object ({
     from: Joi.string().required(),
-    to:   Joi.string().required(),
-    text: Joi.string().required(),
+    to:   Joi.string().required().min(1),
+    text: Joi.string().required().min(1),
     type: Joi.string().required().valid("message", "private_message"),
     time: Joi.string()
 });
@@ -118,7 +118,41 @@ app.get("/participants", async(req, res) => {
     };
 });
 
+//rout post messages
+app.post("/messages", async (req, res) => {
+    const {to, text, type} = req.body; //req from body
+    const from = req.headers.user //req from headers
+
+    try{
+        const validatingMessage = messageSchema.validate({to, text, type}, {abortEarly: false});
+        const userAlreadyExist = await db.collection("participants").findOne({name: from});
+        
+
+        if(validatingMessage.error || userAlreadyExist === null ) {
+            res.status(409).send("Invalid message");//error validating a message
+            console.log(validatingMessage.error.details.map((detail) => detail.message));
+            return;
+
+        } else {
+            //insert messages
+            await db.collection("messages").insertOne({from, to, text, type, time: dayjs(Date.now()).format("HH:mm:ss")});
+
+            //response
+            res.sendStatus(201);
+            console.log("Validated message");
+            return;
+        };
+
+    } catch (err) {
+        res.sendStatus(422); //error sending a message
+        return;
+
+    };
+});
+
 //turn on the server
 app.listen(port, () => {
     console.log(chalk.bold.green(`Server running in port: ${port}`));
 });
+
+/*remaining requirements: get messages, post status,inactive users, message limit*/
