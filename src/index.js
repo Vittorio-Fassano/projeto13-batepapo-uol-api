@@ -97,7 +97,7 @@ app.delete("/participants", async(req, res) => {
         return;
     };
 });
-//WARNING: the route above delete all participants and messages;
+//WARNING: the above route deletes all participants and messages;
 
 //route get participants:
 app.get("/participants", async(req, res) => {
