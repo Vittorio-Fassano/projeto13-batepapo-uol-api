@@ -86,8 +86,18 @@ app.post("/participants", async (req, res) => {
     };
 });
 
-//route delete participants (TO DO)
-
+//route delete participants: WARNING (this route delete all participants and messages)
+app.delete("/participants", async(req, res) => {
+    try {
+        const deleteAllParticipants = await db.collection("participants").deleteMany({});
+        const deleteAllInitialMessages =  await db.collection("messages").deleteMany({});
+    } catch (err) {
+        res.sendStatus(500);
+        console.log(deleteAllParticipants, deleteAllInitialMessages);
+        return;
+    };
+});
+//
 
 //route get participants
 app.get("/participants", async(req, res) => {
