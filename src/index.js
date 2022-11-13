@@ -1,4 +1,4 @@
-//imports
+//imports:
 import express from 'express';
 import cors from 'cors';
 import chalk from 'chalk';
@@ -7,13 +7,13 @@ import {MongoClient} from 'mongodb';
 import Joi from 'joi';
 import dayjs from 'dayjs';
 
-//general configs
+//general configs:
 const app = express();
 app.use(cors());
 dotenv.config();
 app.use(express.json());
 
-//connection with mongo
+//connection with mongo:
 const mongoClient = new MongoClient(process.env.MONGO_URI);
 const port = process.env.PORT;
 
@@ -24,7 +24,7 @@ try {
     console.log(err);
 };
 
-//connection with database
+//connection with database:
 const database = process.env.MONGO_DB;
 let db = null;
 
@@ -34,7 +34,7 @@ try {
     console.log("Error to connect", err);
 };
 
-//schemasJoi
+//schemasJoi:
 const participantSchema = Joi.object ({
     name: Joi.string().required(),
     lastStatus: Joi.number().integer()
@@ -48,7 +48,7 @@ const messageSchema = Joi.object ({
     time: Joi.string()
 });
 
-//route post participants
+//route post participants:
 app.post("/participants", async (req, res) => {
     const {name} = req.body;
 
@@ -86,7 +86,7 @@ app.post("/participants", async (req, res) => {
     };
 });
 
-//route delete participants: WARNING (this route delete all participants and messages)
+//route delete participants(partially working):
 app.delete("/participants", async(req, res) => {
     try {
         const deleteAllParticipants = await db.collection("participants").deleteMany({});
@@ -97,9 +97,9 @@ app.delete("/participants", async(req, res) => {
         return;
     };
 });
-//
+//WARNING: the route above delete all participants and messages;
 
-//route get participants
+//route get participants:
 app.get("/participants", async(req, res) => {
     try {
         const users = await db.collection("participants").find({}).toArray();
@@ -118,7 +118,7 @@ app.get("/participants", async(req, res) => {
     };
 });
 
-//rout post messages
+//rout post messages:
 app.post("/messages", async (req, res) => {
     const {to, text, type} = req.body; //req from body
     const from = req.headers.user //req from headers
@@ -150,7 +150,7 @@ app.post("/messages", async (req, res) => {
     };
 });
 
-//route get messages
+//route get messages:
 app.get("/messages", async(req, res) => {
     try {
         const messages = await db.collection("messages").find({}).toArray();
@@ -164,10 +164,29 @@ app.get("/messages", async(req, res) => {
     };
 });
 
-//turn on the server
+//route post status(partially working):
+app.post("/status", async (req, res) => {
+    const {user} = req.headers;
+
+    try {
+        const userAlreadyExist = await db.collection("participants").findOne({name: user});
+        if(userAlreadyExist === null) {
+            res.sendStatus(404);//no registered user
+            return;
+        } else {
+            await db.collection("participants").updateOne({name: user}, {$set: {lastStatus: Date.now()}});
+        };
+    } catch (err) {   
+        res.sendStatus(500);//error accessing users
+        console.log(err);
+        return;
+    };
+});
+
+//turn on the server:
 app.listen(port, () => {
     console.log(chalk.bold.green(`Server running in port: ${port}`));
 });
 
-//remaining requirements: post status,inactive users, message limit;
-//fix requirements: post messages, get messages;
+//remaining requirements: inactive users(15s);
+//fix requirements: post messages("from" for headers), get messages(limit), post status(partially working);
