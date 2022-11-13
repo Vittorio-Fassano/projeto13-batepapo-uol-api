@@ -121,11 +121,11 @@ app.get("/participants", async(req, res) => {
 //rout post messages
 app.post("/messages", async (req, res) => {
     const {to, text, type} = req.body; //req from body
-    const {user} = req.headers //req from headers
+    const from = req.headers.user //req from headers
 
     try{
         const validatingMessage = messageSchema.validate({to, text, type}, {abortEarly: false});
-        const userAlreadyExist = await db.collection("participants").findOne({name: user});
+        const userAlreadyExist = await db.collection("participants").findOne({name: from});
         
 
         if(validatingMessage.error || userAlreadyExist === null ) {
