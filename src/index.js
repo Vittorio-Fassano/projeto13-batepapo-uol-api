@@ -207,4 +207,6 @@ app.listen(port, () => {
 });
 
 //remaining requirements: inactive users(15s);
-//fix requirements: post status(partially working);
+/*fix requirements: post status(partially working),
+                    delete all participants and messages(partially working);
+*/
