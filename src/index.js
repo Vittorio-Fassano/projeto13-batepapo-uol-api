@@ -58,7 +58,7 @@ app.post("/participants", async (req, res) => {
 
         if (validatingUser.error || userAlreadyExist !== null ) {
             res.status(409).send("Invalid user");//error validating a user
-            console.log(validatingUser.error.details.map((detail) => detail.message));
+            console.log(validatingUser.error.details.map((detail) => detail.message));//to see only the error message
             return;
 
         } else {
@@ -86,7 +86,7 @@ app.post("/participants", async (req, res) => {
     };
 });
 
-//route delete participants(partially working):
+//route delete participants(and messages):
 app.delete("/participants", async(req, res) => {
     try {
         const deleteAllParticipants = await db.collection("participants").deleteMany({});
@@ -94,7 +94,7 @@ app.delete("/participants", async(req, res) => {
         res.status(200).send({deleteAllParticipants, deleteAllInitialMessages});
     } catch (err) {
         res.sendStatus(500);
-        console.log(deleteAllParticipants, deleteAllInitialMessages);
+        console.log(deleteAllParticipants, deleteAllInitialMessages);//to see the actions of the delete method
         return;
     };
 });
@@ -107,7 +107,7 @@ app.get("/participants", async(req, res) => {
 
         //show initial messages
         const showInitialMessages = await db.collection("messages").find({}).toArray();
-        console.log(showInitialMessages);
+        console.log(showInitialMessages);//to see the message when entering the chat
         //
         
         res.status(200).send(users);
@@ -133,7 +133,7 @@ app.post("/messages", async (req, res) => {
 
         if(validatingMessage.error || userAlreadyExist === null ) {
             res.status(409).send("Invalid message");//error validating a message
-            console.log(validatingMessage.error.details.map((detail) => detail.message));
+            console.log(validatingMessage.error.details.map((detail) => detail.message));//to see only the error message
             return;
 
         } else {
@@ -157,22 +157,22 @@ app.post("/messages", async (req, res) => {
 app.get("/messages", async(req, res) => {
     const {user} = req.headers;
     const {limit} = req.query; //only if the limit is required
-    console.log(user);
-    console.log(limit);
+    console.log(user); //see if the user was passing through the headers
+    console.log(limit); //see if the limit was passing through the query string
 
     try {
         const messages = await db.collection("messages").find({
-            $or:[{from:user}, {to:user}, {to:"todos"}, {type:"message"}] //find only messages that user could see
-        }).toArray();
-        console.log(messages);
+            $or:[{from:user}, {to:user}, {to:"todos"}, {type:"message"}] //(find only messages that user could see, which means,...
+        }).toArray();                            //...must deliver all public messages and all private messages sent to and by him);
+        console.log(messages); //to see messages after insert
 
         if(limit === null) { //without a limit
             res.status(200).send(messages);
             return;
         } else {
-            console.log(messages);
+            console.log(messages); //to see the messages before cutting
             const numberOfMessages = messages.slice(-limit).reverse(); //with a limit from query string
-            console.log(numberOfMessages);
+            console.log(numberOfMessages); //to see the messages before cutting
             res.status(200).send(numberOfMessages);
             return;
         };
@@ -190,7 +190,7 @@ app.post("/status", async (req, res) => {
     try {
         const userAlreadyExist = await db.collection("participants").findOne({name: user});
         if(userAlreadyExist === null) {
-            res.sendStatus(404);//no registered user
+            res.sendStatus(404); //no registered user
             return;
         } else {
             const newStatus = await db.collection("participants").updateOne({name: user}, {$set: {lastStatus: Date.now()}});
@@ -198,7 +198,7 @@ app.post("/status", async (req, res) => {
             return;
         };
     } catch (err) {   
-        res.sendStatus(500);//error accessing users
+        res.sendStatus(500); //error accessing users
         console.log(err);
         return;
     };
