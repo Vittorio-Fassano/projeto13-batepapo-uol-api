@@ -122,10 +122,12 @@ app.get("/participants", async(req, res) => {
 app.post("/messages", async (req, res) => {
     const {to, text, type} = req.body; //req from body
     const {user} = req.headers //req from headers
+    const from = user;
 
     try{
-        const validatingMessage = messageSchema.validate({to, text, type}, {abortEarly: false});
-        const userAlreadyExist = await db.collection("participants").findOne({name: user});
+        const validatingMessage = messageSchema.validate({from, to, text, type}, {abortEarly: false});
+        const userAlreadyExist = await db.collection("participants").findOne({name: from});
+        console.log(userAlreadyExist);
         
 
         if(validatingMessage.error || userAlreadyExist === null ) {
@@ -152,20 +154,25 @@ app.post("/messages", async (req, res) => {
 
 //route get messages:
 app.get("/messages", async(req, res) => {
-    const {user} = req.body;
+    const {user} = req.headers;
     const {limit} = req.query; //only if the limit is required
+    console.log(user);
+    console.log(limit);
 
     try {
         const messages = await db.collection("messages").find({
-            $or:[{from: user}, {to:user}, {to:"todos"}, {type:"message"}] //find only messages that user could see
+            $or:[{from:user}, {to:user}, {to:"todos"}, {type:"message"}] //find only messages that user could see
         }).toArray();
+        console.log(messages);
 
         if(limit === null) { //without a limit
             res.status(200).send(messages);
             return;
         } else {
+            console.log(messages);
             const numberOfMessages = messages.slice(-limit); //with a limit from query string
-            res.status(200).send(messages);
+            console.log(numberOfMessages);
+            res.status(200).send(numberOfMessages);
             return;
         };
 
@@ -200,4 +207,4 @@ app.listen(port, () => {
 });
 
 //remaining requirements: inactive users(15s);
-//fix requirements: post messages("from" for headers), post status(partially working);
+//fix requirements: post status(partially working);
