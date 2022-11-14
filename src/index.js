@@ -171,7 +171,7 @@ app.get("/messages", async(req, res) => {
             return;
         } else {
             console.log(messages);
-            const numberOfMessages = messages.slice(-limit); //with a limit from query string
+            const numberOfMessages = messages.slice(-limit).reverse(); //with a limit from query string
             console.log(numberOfMessages);
             res.status(200).send(numberOfMessages);
             return;
@@ -210,4 +210,3 @@ app.listen(port, () => {
 });
 
 //remaining requirements: inactive users(15s);
-//fix requirements: delete all participants and messages(partially working);
