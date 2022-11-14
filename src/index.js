@@ -192,7 +192,9 @@ app.post("/status", async (req, res) => {
             res.sendStatus(404);//no registered user
             return;
         } else {
-            await db.collection("participants").updateOne({name: user}, {$set: {lastStatus: Date.now()}});
+            const newStatus = await db.collection("participants").updateOne({name: user}, {$set: {lastStatus: Date.now()}});
+            res.send(newStatus);
+            return;
         };
     } catch (err) {   
         res.sendStatus(500);//error accessing users
@@ -207,6 +209,4 @@ app.listen(port, () => {
 });
 
 //remaining requirements: inactive users(15s);
-/*fix requirements: post status(partially working),
-                    delete all participants and messages(partially working);
-*/
+//fix requirements: delete all participants and messages(partially working);
