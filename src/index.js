@@ -91,6 +91,7 @@ app.delete("/participants", async(req, res) => {
     try {
         const deleteAllParticipants = await db.collection("participants").deleteMany({});
         const deleteAllInitialMessages =  await db.collection("messages").deleteMany({});
+        res.status(200).send({deleteAllParticipants, deleteAllInitialMessages});
     } catch (err) {
         res.sendStatus(500);
         console.log(deleteAllParticipants, deleteAllInitialMessages);
@@ -182,7 +183,7 @@ app.get("/messages", async(req, res) => {
     };
 });
 
-//route post status(partially working):
+//route post status:
 app.post("/status", async (req, res) => {
     const {user} = req.headers;
 
